@@ -1,0 +1,15 @@
+docker network create --driver bridge --subnet 172.16.1.0/16 --ip-range 172.16.1.0/24 --gateway=172.16.1.1 vswitch01
+
+docker run --name centos1 --hostname centos1 --network vswitch01 -itd centos
+
+
+docker network inspect vswitch01
+
+docker run --name centos3 --hostname centos3 --network host -itd centos
+
+docker exec -it centos3 ping -c3 8.8.8.8
+
+docker run --name centos5 --net=none -dit centos
+docker exec -it centos5 /bin/bash
+ip a
+

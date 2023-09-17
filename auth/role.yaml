@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-deployment
+  labels:
+    app: user-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-deployment
+  template:
+    metadata:
+      labels:
+        app: user-deployment
+    spec:
+      containers:
+      - name: user-deployment
+        image: nginx
+        ports:
+        - containerPort: 80
+
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: user-clusterrole
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user01-token
+  annotations:
+    kubernetes.io/service-account.name: user01
+type: kubernetes.io/service-account-token
+
+kubectl config set-credentials user01 --token=\
+eyJhbGciOiJSUzI1NiIsImtpZCI6ImN6ZXVPN0ZyX1ZIekYyc0MwM2EyWjluRzZfNU9QeTFLNVZFOEZtTzZpSlkifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6InVzZXIwMS10b2tlbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJ1c2VyMDEiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiJlOGU0YTI4Yy1mYjMwLTQwYzQtODViMS02NzFkZjI2YzI2OWIiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6ZGVmYXVsdDp1c2VyMDEifQ.MnJzPbmIg0lwvYhRWd9ZTnTkJ36bJmLdon6imS8OTStPtDo-L7u6k9Noke1jReETGT2UDEaRSnvHrGVyEbIJsRCwpREbicc9PE43OhICB5b7VlEaaj6kiFuNPxp19qAMDZGQgzknNItkL_5ky2UFLI_oWxRHNZK3XqS3h5scu3Mt1sSGf74I-bDVhjC8Pl6cBMRkELZkL88DFsqcKhbeMTfF1HYTllAIG9J2uvvG7Lqt6UQUsG3cFRV4Ou5KxZKYVR044Mmvcd2N7HrIHomuTwITH1LuU13HW_efX5Mb6gKYLlkPG0UzyMuljPdBo8VrJrDNPz2d07Tcsp3CAFts4g
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: user-clusterrolebinding
+subjects:
+- kind: ServiceAccount
+  name: user01
+  namespace: default
+  apiGroup: ""
+roleRef:
+  kind: ClusterRole
+  name: user-clusterrole
+  apiGroup: rbac.authorization.k8s.io
+
+
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: default
+
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: default
+
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: admin-user-token
+  annotations:
+    kubernetes.io/service-account.name: admin-user
+type: kubernetes.io/service-account-token
+
+kubectl describe secret $(kubectl get secret | grep admin-user | awk '{print $1}')
+
+
+
+easy version
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: node-admin
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "watch", "list", "create", "delete"]
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: michelle-binding
+subjects:
+- kind: User
+  name: michelle
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: node-admin
+  apiGroup: rbac.authorization.k8s.io

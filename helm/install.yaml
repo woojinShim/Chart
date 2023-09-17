@@ -1,0 +1,49 @@
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
+chmod 700 get_helm.sh
+./get_helm.sh
+
+source <(helm completion bash)
+echo "source <(helm completion bash)" >> ~/.bashrc
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /opt/mysql
+
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mysql-pvc
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+helm install mysql --set mysqlRootPassword=rootpassword,mysqlUser=mysql,mysqlPassword=my-password,mysqlDatabase=mydatabase,persistence.existingClaim=mysql-pvc stable/mysql
+
+kubectl exec -it mysql-666f6bf655-wkh4h -- bash
+mysql -uroot -prootpassword
+
+helm install mysql ./mysql --set persistence.existingClaim=mysql-pvc,mysqlRootPassword=rootpassword,mysqlUser=mysql,mysqlPassword=mysql
+apt install mariadb-client -y
+
+Repository
+
+curl https://raw.githubusercontent.com/helm/chartmuseum/main/scripts/get-chartmuseum | bash
+
+chartmuseum --debug --port=8080 --storage="local" --storage-local-rootdir="/chart-storage"
+
+curl --data-binary "@mysql-1.7.0.tgz" http://localhost:8080/api/charts

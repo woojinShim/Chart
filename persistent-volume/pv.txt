@@ -1,0 +1,13 @@
+nfs server install
+
+yum -y install nfs-utils
+vi /etc/idmapd.conf
+5 Domain = example.com
+
+vi /etc/exports
+/volume-nfs 172.16.0.0/24(rw,no_root_squash)
+mkdir /volume-nfs
+systemctl enable --now rpcbind nfs-server
+exportfs
+
+

@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-1
+  labels:
+    app: nginx-1
+    network: naver-network-policy
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-2
+  labels:
+    app: nginx-2
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: naver-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      network: naver-network-policy
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 192.168.20.0/24
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: naver-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      network: naver-network-policy
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: my-nginx
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: naver-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      network: naver-network-policy
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          app: namespace-selector-test
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: naver-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      network: naver-network-policy
+  policyTypes:
+  - Ingress
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 82
+
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: naver-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx-2
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 192.168.20.0/24
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: naver-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx-2
+  policyTypes:
+  - Egress
+  egress:
+  - ports:
+    - protocol: TCP
+      port: 82
+
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: naver-network-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      network: naver-network-policy
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 172.16.0.0/16
+      except:
+      - 172.16.1.0/24
+    - namespaceSelector:
+        matchLabels:
+          project: test-project
+    - podSelector:
+        matchLabels:
+          app: mysql
+    ports:
+    - protocol: TCP
+      port: 80
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 192.168.0.0/24
+    ports:
+    - protocol: TCP
+      port: 6000

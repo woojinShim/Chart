@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: default
+  name: dns-pod
+spec:
+  containers:
+  - name: dns-pod
+    image: nginx
+  dnsPolicy: ClusterFirst
+  dnsConfig:
+    nameservers:
+    - 8.8.8.8
+    searches:
+    - default.svc.cluster.local
+    - example.com
+    options:
+    - name: example01
+      value: value01
+    - name: example02
+      value: value02

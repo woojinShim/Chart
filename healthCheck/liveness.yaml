@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: liveness-app
+spec:
+  containers:
+  - name: liveness
+    image: brentley/ecsdemo-nodejs
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 3000
+      initialDelaySeconds: 4 # 컨테이너가 실행되고 4초 후에 프로브가 실행됨
+      periodSeconds: 6 # 6초마다 프로브 실행
+      

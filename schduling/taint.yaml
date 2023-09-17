@@ -1,0 +1,34 @@
+kubectl taint node worker-1.example.com key01=value01:NoSchedule
+kubectl describe node worker-1.example.com | grep Taints
+
+kubectl cordon worker-1.example.com
+kubectl drain worker-1.example.com
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taint-app
+  labels:
+    app: taint-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: taint-app
+  template:
+    metadata:
+      labels:
+        app: taint-app
+    spec:
+      containers:
+      - name: taint-app
+        image: arisu1000/simple-container-app:latest
+        ports:
+        - containerPort: 8080
+      tolerations:
+      - key: "key01"
+        operator: "Equal"
+        value: "value01"
+        effect: "NoSchedule"
+
+

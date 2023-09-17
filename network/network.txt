@@ -1,0 +1,31 @@
+kubectl exec podnet-01 -c web -- apt-get update
+kubectl exec podnet-01 -c web -- apt-get install iproute2 -y
+kubectl exec podnet-01 -c ubuntu -- apt-get update
+kubectl exec podnet-01 -c ubuntu -- apt-get install -y curl iproute2
+
+kubectl exec podnet-01 -c ubuntu -- '/sbin/ip' 'a'
+
+
+kubectl exec podnet-01 -c ubuntu -- 'ps'
+
+
+kubectl run httpd --image=httpd
+kubectl exec httpd -c httpd -- apt-get update
+kubectl exec httpd -c httpd -- apt-get install iproute2 -y
+kubectl exec httpd -c httpd -- '/sbin/ip' 'a'
+
+kubectl get pods -o wide
+kubectl exec podnet-01 -c ubuntu 'curl' '192.168.196.167'
+
+kubectl delete pod httpd
+kubectl taint node node02 key01=value01:NoSchedule
+kubectl run httpd --image=httpd
+kubectl get pods -o wide
+kubectl exec httpd -c httpd -- apt-get update
+kubectl exec httpd -c httpd -- apt-get install iproute2 -y
+kubectl exec podnet-01 -- 'curl' '192.168.196.168'
+
+kubectl taint node node02 key01=value01:NoSchedule-
+
+iptables -t nat -L | grep node port
+

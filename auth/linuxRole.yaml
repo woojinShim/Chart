@@ -1,0 +1,74 @@
+
+
+openssl req -new -key linux.key -out linux.csr \
+ -subj "/CN=linux/O=edu"
+
+openssl x509 -req -in linux.csr \
+ -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key \
+ -CAcreateserial -out linux.crt -days 365
+
+kubectl config set-credentials linux \
+ --client-certificate=/home/linux/.certs/linux.crt \
+ --client-key=/home/linux/.certs/linux.key
+
+kubectl config set-context linux-context \
+ --cluster=kubernetes --user=linux --namespace=linux-space
+
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: linux-role
+  namespace: linux-space
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get","list","watch","create","update","delete","patch"]
+- apiGroups: ["apps"]
+  resources: ["deployments","replicasets"]
+  verbs: ["get","list","watch","create","update","delete","patch"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get","list","watch","create","update","delete","patch"]
+
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: linux-rolebinding
+subjects:
+- kind: User
+  name: linux
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: linux-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: default
+subjects:
+- kind: User
+  name: jane
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+
